@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Calculator.css';
 
 const Calculator = () => {
@@ -6,22 +6,45 @@ const Calculator = () => {
   const [result, setResult] = useState('');
 
   const handleButtonClick = (value) => {
-    if (value === '=') {
-      try {
+    try {
+      if (value === '=') {
         setResult(eval(input).toString());
-      } catch (error) {
-        setResult('Error');
+      } else if (value === 'C') {
+        setInput('');
+        setResult('');
+      } else {
+        setInput((prevInput) => prevInput + value);
       }
-    } else if (value === 'C') {
+    } catch (error) {
       setInput('');
-      setResult('');
-    } else {
-      setInput((prevInput) => prevInput + value);
+      setResult('Error');
     }
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleButtonClick('=');
+    }
+  };
+  const handleKeyPress = (event) => {
+    const key = event.key;
+    if (/\d|[+*/-]/.test(key)) {
+      handleButtonClick(key);
+    } else if (key === 'Enter') {
+      handleButtonClick('=');
+    }
+  };
+  useEffect(() => {
+    window.addEventListener('keypress', handleKeyPress);
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+    };
+  }, []);
+
+
   return (
-    <div className="calculator">
+    <div className="calculator" onKeyDown={handleKeyDown} tabIndex="0">
       <div className="display">
         <div className="input">{input}</div>
         <div className="result">{result}</div>
